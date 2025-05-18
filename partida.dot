@@ -1,0 +1,21 @@
+digraph tree {
+    "Partida";
+    "Turno 1";
+    "Blanca: e1";
+    "Negra: e3";
+    "Turno 2";
+    "Blanca: e4";
+    "Negra: Nf5";
+    "Turno 3";
+    "Blanca: O-O";
+    "Negra: O-O-O";
+    "Partida" -> "Turno 1";
+    "Turno 1" -> "Blanca: e1";
+    "Turno 1" -> "Negra: e3";
+    "Turno 1" -> "Turno 2";
+    "Turno 2" -> "Blanca: e4";
+    "Turno 2" -> "Negra: Nf5";
+    "Turno 2" -> "Turno 3";
+    "Turno 3" -> "Blanca: O-O";
+    "Turno 3" -> "Negra: O-O-O";
+}
