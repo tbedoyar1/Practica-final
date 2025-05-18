@@ -1,0 +1,103 @@
+import re
+from anytree import Node, RenderTree, AsciiStyle
+
+class NodoAjedrez:
+    def __init__(self, nombre, padre=None):
+        self.nodo = Node(nombre, parent=padre)
+
+def construir_arbol(partida):
+    """Construye el árbol de la partida en formato ASCII"""
+    raiz = NodoAjedrez("Partida").nodo
+    turno_actual = raiz
+    
+    for i in range(0, len(partida), 2):
+        num_turno = (i // 2) + 1
+        nodo_turno = NodoAjedrez(f"Turno {num_turno}", padre=turno_actual).nodo
+        
+        # Jugada blanca
+        NodoAjedrez(f"Blanca: {partida[i]['mov']}", padre=nodo_turno)
+        
+        # Jugada negra (si existe)
+        if i + 1 < len(partida):
+            NodoAjedrez(f"Negra: {partida[i+1]['mov']}", padre=nodo_turno)
+        
+        turno_actual = nodo_turno
+    
+    return raiz
+
+def analizar_movimiento(movimiento):
+    """Analiza el movimiento y devuelve tipo y mensaje descriptivo"""
+    mov = movimiento.strip()
+    
+    # Enroques
+    if mov == 'O-O':
+        return {'mov': mov, 'msg': 'Enroque corto'}
+    if mov == 'O-O-O':
+        return {'mov': mov, 'msg': 'Enroque largo'}
+    
+    # Jaque y mate
+    if mov.endswith('#'):
+        return {'mov': mov, 'msg': 'Mate'}
+    if mov.endswith('+'):
+        return {'mov': mov, 'msg': 'Jaque'}
+    
+    # Promociones
+    if '=Q' in mov:
+        return {'mov': mov, 'msg': 'Promoción a Dama'}
+    if '=R' in mov:
+        return {'mov': mov, 'msg': 'Promoción a Torre'}
+    if '=B' in mov:
+        return {'mov': mov, 'msg': 'Promoción a Alfil'}
+    if '=N' in mov:
+        return {'mov': mov, 'msg': 'Promoción a Caballo'}
+    
+    # Movimientos normales
+    if mov[0] in 'KQRBN':
+        pieza = {'K': 'Rey', 'Q': 'Dama', 'R': 'Torre', 
+                'B': 'Alfil', 'N': 'Caballo'}[mov[0]]
+        return {'mov': mov, 'msg': f'Movimiento de {pieza}'}
+    
+    # Movimientos de peón
+    if 'x' in mov:
+        return {'mov': mov, 'msg': 'Captura de peón'}
+    return {'mov': mov, 'msg': 'Avance de peón'}
+
+def validar_movimiento(movimiento):
+    """Valida la sintaxis básica del movimiento"""
+    patron = (
+        r'^([KQRBN][a-h]?[1-8]?x?[a-h][1-8]'  # Piezas
+        r'|O-O(?:-O)?'                         # Enroques
+        r'|[a-h]x?[a-h]?[1-8](?:=[QRBN])?'     # Peones
+        r')[+#]?$'                             # Jaque/mate
+    )
+    return bool(re.fullmatch(patron, movimiento))
+
+def main():
+    print("♟️ Analizador de Partidas de Ajedrez ♟️")
+    print("Ingrese movimientos uno por uno o 'fin' para terminar\n")
+    
+    partida = []
+    while True:
+        entrada = input(f"Movimiento {len(partida)+1}: ").strip()
+        
+        if entrada.lower() == 'fin':
+            break
+        
+        if not validar_movimiento(entrada):
+            print("❌ Movimiento inválido. Ejemplos válidos:")
+            print("e4, Nf3, exd5, O-O, e8=Q+, Qxf7#")
+            continue
+        
+        movimiento = analizar_movimiento(entrada)
+        partida.append(movimiento)
+        print(f"✅ {movimiento['msg']}")
+    
+    if partida:
+        print("\n🌳 Representación del Árbol:")
+        arbol = construir_arbol(partida)
+        print(RenderTree(arbol, style=AsciiStyle()).by_attr())
+    else:
+        print("\nNo se ingresaron movimientos válidos.")
+
+if __name__ == "__main__":
+    main()
